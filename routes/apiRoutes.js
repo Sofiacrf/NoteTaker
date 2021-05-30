@@ -3,41 +3,31 @@
 
 //const noteData = require('../data/noteData');
 const fs = require('fs');
-const util = require("util");
-
-const readTheFile = util.promisify(fs.readFile);
-const writeToFile = util.promisify(fs.writeFile);
+const path = require("path");
+//const { read } = require('../data/noteData')
 
 let theNotes;
 
 // ROUTING
 module.exports = (app) => {
 
-   // Read the db.json file
-   const noteData = readTheFile('./db/db.json');
-   
-   
-   //API GET Requests 
-   app.get('/api/notes', (req, res) =>
-      res.json(theNotes))
+   // API notes reads the db.json file
+   const noteData = JSON.parse(fs.readFileSync(path.join(__dirname, '../db/db.json'), 'utf8'));
 
+   app.get('/api/notes', (req, res) => res.json(noteData));
 
-
-   //API POST Request
-   // Save the information on the request body
+   // API POST Request returns all saved notes
    app.post('/api/notes', (req, res) => {
       noteData.push(req.body);
-   
-
-   // Save the information on the db.json file
-   writeToFile('./db/db.json', JSON.stringify(noteData), function (err, data) {
-      if (err) {
-         return err
-      }
-      res.json(theNotes);
+      res.json(true);
    });
-});
+   
+   fs.writeFileSync(path.join(__dirname, '../db/db.json'), JSON.stringify(noteData),
+   function (err, data) {
+      if (err) {
+         return err;
+      }
+      res.json(noteData);
+   })
 
-
-
-};
+   };
